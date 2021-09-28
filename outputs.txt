@@ -1,0 +1,96 @@
+Output 0:
+----------------------------------------------------------------------------------------------------
+Psychiatrist: Welcome back, Kevin. How have you been?
+Kevin: How have I been? Fine.
+Psychiatrist: How is the treatment been going? How have you been able to keep it under control?
+Kevin: Well, it's been going pretty good. I am taking the same medication that I was taking before. The doctor is having me come once a month. But I've been doing pretty well.
+Psychiatrist: Good. Are you sleeping okay
+
+----------------------------------------------------------------------------------------------------
+Setting `pad_token_id` to `eos_token_id`:50256 for open-end generation.
+Output 1:
+----------------------------------------------------------------------------------------------------
+Psychiatrist: Welcome back, Kevin. How have you been?
+Kevin: How have I been? Fine.
+Psychiatrist: How is the treatment been going? How have you been able to keep it under control?
+Kevin: Well, it's been going pretty good. I am taking the same medication that I was taking before. The doctor is having me come once a month. But I've been doing pretty well.
+Psychiatrist: Good. Are you sleeping okay?
+Kevin: No, I haven't been sleeping well, actually.
+Psychiatrist: Have you been sleeping on the couch a lot?
+Kevin: Well, the past couple of nights I have not been sleeping on the couch because of the depression and the other problem. But I am sleeping okay. I think the past month I have been taking medication that is supposed to take care of my depression. I am feeling a little better than before.
+Psychiatrist: The depression might
+
+----------------------------------------------------------------------------------------------------
+Setting `pad_token_id` to `eos_token_id`:50256 for open-end generation.
+Output 2:
+----------------------------------------------------------------------------------------------------
+Psychiatrist: Welcome back, Kevin. How have you been?
+Kevin: How have I been? Fine.
+Psychiatrist: How is the treatment been going? How have you been able to keep it under control?
+Kevin: Well, it's been going pretty good. I am taking the same medication that I was taking before. The doctor is having me come once a month. But I've been doing pretty well.
+Psychiatrist: Good. Are you sleeping okay?
+Kevin: No, I haven't been sleeping well, actually.
+Psychiatrist: Have you been sleeping on the couch a lot?
+Kevin: Well, the past couple of nights I have not been sleeping on the couch because of the depression and the other problem. But I am sleeping okay. I think the past month I have been taking medication that is supposed to take care of my depression. I am feeling a little better than before.
+Psychiatrist: The depression might be going away a little?
+Kevin: Yes, I am feeling a little better and I am sleeping better. I think I just need to come to see you more often.
+Psychiatrist: Good. Do you still feel like being around other people?
+Kevin: No, I think I am too depressed to do that.
+Psychiatrist: What do you like to do, besides reading?
+Kevin: Well, I like to do my own writing, and listen to music
+
+----------------------------------------------------------------------------------------------------
+Setting `pad_token_id` to `eos_token_id`:50256 for open-end generation.
+Output 3:
+----------------------------------------------------------------------------------------------------
+Psychiatrist: Welcome back, Kevin. How have you been?
+Kevin: How have I been? Fine.
+Psychiatrist: How is the treatment been going? How have you been able to keep it under control?
+Kevin: Well, it's been going pretty good. I am taking the same medication that I was taking before. The doctor is having me come once a month. But I've been doing pretty well.
+Psychiatrist: Good. Are you sleeping okay?
+Kevin: No, I haven't been sleeping well, actually.
+Psychiatrist: Have you been sleeping on the couch a lot?
+Kevin: Well, the past couple of nights I have not been sleeping on the couch because of the depression and the other problem. But I am sleeping okay. I think the past month I have been taking medication that is supposed to take care of my depression. I am feeling a little better than before.
+Psychiatrist: The depression might be going away a little?
+Kevin: Yes, I am feeling a little better and I am sleeping better. I think I just need to come to see you more often.
+Psychiatrist: Good. Do you still feel like being around other people?
+Kevin: No, I think I am too depressed to do that.
+Psychiatrist: What do you like to do, besides reading?
+Kevin: Well, I like to do my own writing, and listen to music and sleep and eat and sleep. I don't do anything in between.
+Psychiatrist: Has this depression been coming on over a long period of time?
+Kevin: Yes. I have been feeling like this for the past year.
+Psychiatrist: I think it is important for you to think more about the cause of your depression. How have you been able to keep it under control?
+Kevin: Well, I am supposed to take medication. I am not supposed to drink
+
+----------------------------------------------------------------------------------------------------
+Setting `pad_token_id` to `eos_token_id`:50256 for open-end generation.
+Output 4:
+----------------------------------------------------------------------------------------------------
+Psychiatrist: Welcome back, Kevin. How have you been?
+Kevin: How have I been? Fine.
+Psychiatrist: How is the treatment been going? How have you been able to keep it under control?
+Kevin: Well, it's been going pretty good. I am taking the same medication that I was taking before. The doctor is having me come once a month. But I've been doing pretty well.
+Psychiatrist: Good. Are you sleeping okay?
+Kevin: No, I haven't been sleeping well, actually.
+Psychiatrist: Have you been sleeping on the couch a lot?
+Kevin: Well, the past couple of nights I have not been sleeping on the couch because of the depression and the other problem. But I am sleeping okay. I think the past month I have been taking medication that is supposed to take care of my depression. I am feeling a little better than before.
+Psychiatrist: The depression might be going away a little?
+Kevin: Yes, I am feeling a little better and I am sleeping better. I think I just need to come to see you more often.
+Psychiatrist: Good. Do you still feel like being around other people?
+Kevin: No, I think I am too depressed to do that.
+Psychiatrist: What do you like to do, besides reading?
+Kevin: Well, I like to do my own writing, and listen to music and sleep and eat and sleep. I don't do anything in between.
+Psychiatrist: Has this depression been coming on over a long period of time?
+Kevin: Yes. I have been feeling like this for the past year.
+Psychiatrist: I think it is important for you to think more about the cause of your depression. How have you been able to keep it under control?
+Kevin: Well, I am supposed to take medication. I am not supposed to drink. I have been trying to take my medication for a while, but I haven't been sleeping very good.
+
+This site complies with the HONcode standard for trustworthy health information:verify here.
+
+Advertising Notice
+
+This Site and third parties who place advertisements on this Site may collect and use information about
+your visits to this Site and other websites in order to provide advertisements about goods and services of
+interest to you. If you would like to obtain more information about
+
+----------------------------------------------------------------------------------------------------
