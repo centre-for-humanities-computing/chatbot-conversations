@@ -1,111 +1,113 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, Conversation
+from transformers import AutoTokenizer, AutoModelForCausalLM, GPTJForCausalLM, pipeline, Conversation, StoppingCriteriaList, MaxLengthCriteria
+from datasets import load_dataset
 import os
 import torch
 import datetime
+import random
+from generation import custom_generation
 
-time0 = datetime.datetime.now()
 cache_path = os.path.join(".cache", "huggingface", "transformers")
 
-# cache stores the gpt-j model
-tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6B", cache_dir=cache_path)
-model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", cache_dir=cache_path)
+class Experiment:
+    def __init__(self, population, cycles, sample_strategy, initial_context, conversation_length):
+        """a run of the experiment
+        
+        Keyword arguments:
+        population -- the participants (and TODO: their models) of the experiment
+        cycles -- one cycle is a conversation between every participant
+        sample_strategy -- TBD
+        initial_context -- how does participant_1 start the conversation?
+        conversation_length -- how many lines should be spoken (TODO: maybe should not be a fixed number)
+        Return: return_description
+        """
+        
+        self.population = population
+        self.cycles = cycles
+        self.sample_strategy = sample_strategy
+        self.initial_context = initial_context
+        self.length = conversation_length
 
-# tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-large", cache_dir=cache_path)
-# model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-large", cache_dir=cache_path)
+        # TODO: instantiate models here
 
-# set this so it doesn't get logged
-model.config.pad_token_id = model.config.eos_token_id
+    def conversation_generation(self, speaker_one, speaker_two, length, context, tokenizer, model):
+        # TODO: stopping criteria
+        # initial criteria
+        c = "A conversation between " + speaker_one + " and " + speaker_two + ": \n\n" + speaker_one + ": " + context + "\n\n" + speaker_two + ":"
+        correct_lines = 4
 
+        # TODO: instead of for, should make a while loop (because of removing lines etc.)
+        for i in range(length):
+            input_ids = tokenizer.encode(c, return_tensors='pt')
 
-# conv_pipeline = pipeline("conversational", model=model, tokenizer=tokenizer)
-# resp_pipeline = pipeline("conversational", model=model, tokenizer=tokenizer)
+            # top_p_output = model.sample(
+            # input_ids, 
+            # do_sample=True,
+            # # TODO: make stopping_criteria work
+            # # stopping_criteria=StoppingCriteriaList(MaxLengthCriteria(max_length=100)),
+            # # max_length=100*(i+1),
+            # top_p = 0.95,
+            # length_penalty = 0.7
+            # )
 
-# c = Conversation("Welcome back.")
-# first = conv_pipeline(c)
+            top_p_output = custom_generation(
+                model,
+                input_ids,
+                do_sample=True,
+                top_p = 0.95,
+                max_length=200*(i+1),
+                # length_penalty = 0.7
+            )
 
-# c2 = Conversation()
-
-# for i in range(0, 5):
-    # c2.add_user_input(first.generated_responses[-1])
-    # second = conv_pipeline(c2)
-    # c.add_user_input(second.generated_responses[-1])
-    # first = conv_pipeline(c)
-# print(first)
-
-# speaker_one + ": " + context + " " + speaker_two + ":"
-def conversation_generation(speaker_one, speaker_two, length, context):
-    c = speaker_one + ": " + context + "\n\n" + speaker_two + ":"
-    correct_lines = 0
-
-    for i in range(0, length):
-        input_ids = tokenizer.encode(c, return_tensors='pt')
-
-        top_p_output = model.generate(
-        input_ids, 
-        do_sample=True, 
-        max_length=100*(i+1),
-        top_p = 0.95,
-        length_penalty = 0.7
-        )
-
-        c = tokenizer.decode(top_p_output[0], skip_special_tokens=False)
-        # print("Output " + str(i) + ":\n" + 100 * '-')
-        # print(c)
-        # print("\n" + 100 * '-')
-
-        # remove lines which don't start with the correct participant
-        # j % 4 == 0 and 
-        lines = c.splitlines()
-        for j in range(correct_lines, len(lines)):
-            if  j % 2 == 0 and not (lines[j].startswith(speaker_two + ":") or
-            lines[j].startswith(speaker_one + ":") or lines[j].endswith("says one final sentence before ending the conversation.")):
-                break
-            else:
-                correct_lines += 1
-        c = '\n'.join(lines[:correct_lines])
-
-        if i == length - 3:
-            endings = ['.', '?', '!']
+            # print(top_p_output)
+            # decode the contents and split it into lines for processing
+            c = tokenizer.decode(top_p_output[0], skip_special_tokens=False)
+            correct_lines_at_start = correct_lines
             lines = c.splitlines()
+            print(i, c)
 
-            if not (lines[-1].endswith(tuple(endings)) or lines[-1] == ""):
-                lines.pop()
+            # TODO: make sure this still works
+            # if a line does not start with one of the speakers and is not blank, its incorrect and must not be used
+            # TODO: check if the line actually ends
+            for j in range(correct_lines, len(lines)):
+                if  j % 2 == 0 and not (lines[j].startswith(speaker_two + ":") or
+                lines[j].startswith(speaker_one + ":")):
+                    break
+                else:
+                    correct_lines += 1
+            # take only the correct lines, but also only take one side of the conversation
+            c = '\n'.join(lines[:min(correct_lines, correct_lines_at_start+2)])
 
-            if lines[-1] != "":
-                lines.append("")
-
-            c = '\n'.join(lines)
-
-            if (len(lines) - 2) % 4 == 0:
-                c += '\n' + speaker_two + " says one final sentence before ending the conversation.\n\n" + speaker_two + ':'
-            else:
-                c += '\n' + speaker_one + " says one final sentence before ending the conversation.\n\n" + speaker_one + ':'
+        return c
 
 
+        
+    def run(self):
+        tokenizers = []
+        models = []
+        #for participant in self.population:
 
-    # print(c)
-    # print("Correct lines: ", len(lines))
-    # input_ids = tokenizer.encode(c, return_tensors='pt')
+        # TODO: tokenizer/model for each person
+        tokenizer = AutoTokenizer.from_pretrained("gpt2", cache_dir=cache_path)
 
-    # print("FINISHED ENCODING")
-    # top_p_output = model.generate(
-    # input_ids, 
-    # do_sample=True, 
-    # max_length=len(c) + 100,
-    # top_p = 0.93,
-    # length_penalty = 0.7
-    # )
-    # c = tokenizer.decode(top_p_output[0], skip_special_tokens=False)
+        # add the EOS token as PAD token to avoid warnings
+        model = AutoModelForCausalLM.from_pretrained("gpt2", pad_token_id=tokenizer.eos_token_id, cache_dir=cache_path)
 
-    return c
+        for i in range(self.cycles):
+            for person in self.population:
+                for partner in self.population:
+                    if partner is not person:
+                        self.conversation_generation(person, partner, self.length, self.initial_context, tokenizer, model)
 
-time1 = datetime.datetime.now()
-# encode context the generation is conditioned on
-conversation = conversation_generation("Psychiatrist", "Kevin", 6, "Welcome back, Kevin. How have you been?")
-print("FINISHED GENERATING")
-f = open(os.path.join("outputs", str(datetime.datetime.now())), 'w')
-f.write(conversation)
-f.write("Loading model: ", str(time1 - time0))
-f.write("Generation: ", str(datetime.datetime.now() - time1))
-f.close()
-print("FINISHED EVERYTHING")
+
+
+Experiment(
+    population = {"John" : "gpt2", "Margaret" : "gpt2"}, 
+    cycles = 1,
+    # TODO: implement different strategies
+    sample_strategy = "TBD", 
+    #callbacks = [Metrics(), Print(), Logger()],
+    # TODO: use_gpu
+    #use_gpu = True
+    initial_context="Hi. Why are you late?",
+    conversation_length=3
+    ).run()
