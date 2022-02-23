@@ -264,7 +264,6 @@ def custom_generation(
 
         # [25] == ':', TODO: change it to just the encoding of the char
         if tokens_to_add == torch.tensor([25]):
-            print("BREAKING")
             break
 
         # extend attention_mask for new generated input if only decoder
