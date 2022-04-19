@@ -1,6 +1,4 @@
 from chatbots import Experiment
-from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer
-import os
 
 Experiment(
     population = {"John" : "gpt2", "Margaret" : "gpt2", "Alice" : "gpt2", "Bob" : "gpt2", "Eve" : "gpt2", "Charlie" : "gpt2", "Darwin" : "gpt2"}, 
