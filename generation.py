@@ -1,3 +1,7 @@
+# Mostly taken from https://huggingface.co/transformers/v3.5.1/_modules/transformers/modeling_utils.html
+# see there for more info
+# most important line for this task is #235
+
 import logging
 from typing import Iterable, Optional, Tuple
 from transformers import top_k_top_p_filtering
@@ -227,7 +231,7 @@ def custom_generation(
         if unfinished_sents.max() == 0:
             break
 
-        # [198] == '\n', TODO: change it to just the encoding of the char
+        # [198] == '\n'
         if tokens_to_add == torch.tensor([198]).to(device):
             break
 
