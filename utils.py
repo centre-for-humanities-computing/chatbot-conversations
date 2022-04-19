@@ -16,3 +16,16 @@ def get_participant_files(path, name):
     files += glob.glob(path2)
 
     return files
+
+
+def split_conversation(conv, participant1, participant2):
+    list_conv = conv.splitlines()
+    conv1 = []
+    conv2 = []
+    for line in list_conv:
+        if line.startswith(participant1):
+            conv1.append(line)
+        elif line.startswith(participant2):
+            conv2.append(line)
+
+    return "\n\n".join(conv1), "\n\n".join(conv2)

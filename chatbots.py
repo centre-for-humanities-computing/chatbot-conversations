@@ -6,16 +6,16 @@ import datetime
 import random
 from generation import custom_generation
 from datasets import load_dataset
-from utils import get_participant_files
+from utils import get_participant_files, split_conversation
 import glob
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 cache_path = os.path.join(".cache", "huggingface", "transformers")
 
 class Experiment:
-    def __init__(self, population, cycles=1, initial_context="Hello.", conversation_length=10, random_length=0, trainer=None,
-    training_args=None, verbose=False, use_files=True, use_gpu=-1, generation_parameters=None, context_size=600, full_conversation=True, output_path="outputs"):
+    def __init__(self, population, cycles=1, initial_context="Hello.", conversation_length=10, random_length=0,
+    training_args=None, verbose=False, use_files=True, use_gpu=-1, generation_parameters=None, context_size=600, full_conversation=True, 
+    batch_size=128, train_after_run=True, output_path="outputs"):
         """a run of the experiment
         
         Keyword arguments:
@@ -36,13 +36,14 @@ class Experiment:
         self.length = conversation_length
         self.output_path = output_path
         self.random_length = random_length
-        self.trainer = trainer
         self.training_args = training_args
         self.verbose = verbose
         self.context_size = context_size
         self.use_files = use_files
         self.generation_parameters = generation_parameters
         self.full_conversation = full_conversation
+        self.batch_size = batch_size
+        self.train_after_run = train_after_run
         self.models = {}
         self.conversations = pd.DataFrame(columns=['Participant_1', 'Participant_2', 'Conversation', 'P_1_Conv', 'P_2_Conv'])
 
@@ -57,6 +58,8 @@ class Experiment:
             # otherwise the tokenizer and model need to be passed
             else:
                 self.models[participant] = self.population[participant]
+                self.models[participant][1].config.pad_token_id = self.models[participant][0].eos_token_id
+
 
         if self.verbose:
             print("Finished model instantiation")
@@ -133,20 +136,20 @@ class Experiment:
                             output.write(conv)
                             output.close()
                         else:
-                            conv1, conv2 = self.split_conversation(conv, person, partner)
+                            conv1, conv2 = split_conversation(conv, person, partner)
                             self.conversations.loc[len(self.conversations.index)]  = [person, partner, conv, conv1, conv2]
 
-        # TODO: training here (need to decide how to train - maybe argument)
-        #self.conversations.to_csv('conversations.txt', sep='\t', index=True)
         # get all of the output files into the conversation df to use for training
         if self.use_files:
             self.populate_conversations()
-        self.train_participant("John")
+        if self.train_after_run:
+            for person in self.population:
+                self.train_participant(person)
 
     def train_participant(self, participant):
         if self.verbose:
             print("Training " + participant)
-        context_length = 128
+
         tokenizer = self.models[participant][0]
         model = self.models[participant][1]
 
@@ -162,7 +165,7 @@ class Experiment:
         outputs = tokenizer(
         conversations,
         truncation=True,
-        max_length=context_length,
+        max_length=self.batch_size,
         return_overflowing_tokens=True,
         return_length=True,
         )
@@ -175,11 +178,9 @@ class Experiment:
         # these are the batches of tokens I will use for training
         input_batch = []
         for length, input_ids in zip(outputs["length"], outputs["input_ids"]):
-            if length == context_length:
+            if length == self.batch_size:
                 input_batch.append(input_ids)
-        
-        tokenized_train, tokenized_test = train_test_split(input_batch, shuffle=False)
-
+    
         data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
 
         if self.training_args is None:
@@ -203,23 +204,14 @@ class Experiment:
         else:
             args = self.training_args
 
-        if self.trainer is None:
-            Trainer(
-                model=model,
-                tokenizer=tokenizer,
-                args=args,
-                data_collator=data_collator,
-                train_dataset=tokenized_train,
-                eval_dataset=tokenized_test,
-            ).train()
-        else:
-            self.trainer(model=model,
-                tokenizer=tokenizer,
-                args=args,
-                data_collator=data_collator,
-                train_dataset=tokenized_train,
-                eval_dataset=tokenized_test,
-            ).train()
+        Trainer(
+            model=model,
+            tokenizer=tokenizer,
+            args=args,
+            data_collator=data_collator,
+            train_dataset=input_batch,
+        ).train()
+       
 
     def return_model(self, participant):
         return self.models[participant][1]
@@ -228,26 +220,17 @@ class Experiment:
     # (only used if use_files is True)
     def populate_conversations(self):
         data_names = glob.glob(os.path.join(self.output_path, "*"))
+        self.conversations = pd.DataFrame(columns=['Participant_1', 'Participant_2', 'Conversation', 'P_1_Conv', 'P_2_Conv'])
+
         for file_name in data_names:
             with open(file_name, 'r') as f:
                 person1, person2 = file_name.split('/')[1].split('_')[:2]
                 conv = f.read()
-                conv1, conv2 = self.split_conversation(conv, person1, person2)
+                conv1, conv2 = split_conversation(conv, person1, person2)
                 self.conversations.loc[len(self.conversations.index)]  = [person1, person2, conv, conv1, conv2]
             f.close()
 
-    def split_conversation(self, conv, participant1, participant2):
-        list_conv = conv.splitlines()
-        conv1 = []
-        conv2 = []
-        for line in list_conv:
-            if line.startswith(participant1):
-                conv1.append(line)
-            elif line.startswith(participant2):
-                conv2.append(line)
 
-        return "\n\n".join(conv1), "\n\n".join(conv2)
 
 # TODO: test custom trainer, custom model + tokenizer, test custom parameters
 # things left to do: custom parameters for generation, figure out training
-# TODO: test split should be minimized (because the point is to train)
