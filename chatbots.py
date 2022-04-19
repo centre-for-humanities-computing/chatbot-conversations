@@ -15,7 +15,7 @@ cache_path = os.path.join(".cache", "huggingface", "transformers")
 
 class Experiment:
     def __init__(self, population, cycles=1, initial_context="Hello.", conversation_length=10, random_length=0, trainer=None,
-    training_args=None, verbose=False, output_path="outputs"):
+    training_args=None, verbose=False, use_files=True, use_gpu=-1, generation_parameters=None, context_size=600, full_conversation=True, output_path="outputs"):
         """a run of the experiment
         
         Keyword arguments:
@@ -28,10 +28,7 @@ class Experiment:
         output_path -- path for conversation outputs (default=create directory "outputs")
         Return: return_description
         """
-        # TODO: should the text be saved to a file? make it into an argument
-
-        # TODO: use_gpu
-        #use_gpu = True
+        self.device = "cuda:" + str(use_gpu) if use_gpu > -1 else "cpu"
         
         self.population = population
         self.cycles = cycles
@@ -42,9 +39,12 @@ class Experiment:
         self.trainer = trainer
         self.training_args = training_args
         self.verbose = verbose
+        self.context_size = context_size
+        self.use_files = use_files
+        self.generation_parameters = generation_parameters
+        self.full_conversation = full_conversation
         self.models = {}
-        # TODO: think about whether we need more columns in the df
-        self.conversations = pd.DataFrame(columns=['Participant_1', 'Participant_2', 'Conversation'])
+        self.conversations = pd.DataFrame(columns=['Participant_1', 'Participant_2', 'Conversation', 'P_1_Conv', 'P_2_Conv'])
 
         for participant in self.population:
             # if text is passed, assume it is a huggingface model
@@ -58,13 +58,13 @@ class Experiment:
             else:
                 self.models[participant] = self.population[participant]
 
-            if self.verbose:
-                print("Finished model instantiation")
+        if self.verbose:
+            print("Finished model instantiation")
         
     def conversation_generation(self, speaker_one, speaker_two):
 
         if self.verbose:
-            print("Generating conversation between" + speaker_one + " and " + speaker_two)
+            print("Generating conversation between " + speaker_one + " and " + speaker_two)
         # initial criteria
         c = "A conversation between " + speaker_one + " and " + speaker_two + ": \n\n" + speaker_one + ": " + self.initial_context + "\n\n" + speaker_two + ":"
         lines = 0
@@ -80,20 +80,37 @@ class Experiment:
         # generate as many lines as set
         while lines < length:
 
-            # encode input, generate output and decode it
-            # TODO: allow option to either generate with full context or with last x chars
-            input_ids = self.models[speakers[which_is_speaking]][0].encode(c[-600:], return_tensors='pt')
-            top_p_output = custom_generation(
-                self.models[speakers[which_is_speaking]][1],
-                input_ids,
-                # TODO: allow custom parameters
-                do_sample=True,
-                top_p = 0.95,
-                max_length=200*(lines+1),
-                length_penalty = 0.7
-            )
-            # TODO: dont forget above TODO here
-            c = c[:-600] + self.models[speakers[which_is_speaking]][0].decode(top_p_output[0], skip_special_tokens=False) + "\n" + speakers[not which_is_speaking] + ":"
+            # if full context is required, use it, otherwise
+            if self.context_size is not 0:
+                input = c[-1 * self.context_size:]
+            else:
+                input = c
+
+            input_ids = self.models[speakers[which_is_speaking]][0].encode(input, return_tensors='pt').to(self.device)
+
+            if self.generation_parameters is not None:
+                output = custom_generation(
+                    self.models[speakers[which_is_speaking]][1].to(self.device),
+                    self.device,
+                    input_ids,
+                    *self.generation_parameters
+                )
+            else:
+                output = custom_generation(
+                    self.models[speakers[which_is_speaking]][1].to(self.device),
+                    self.device,
+                    input_ids,
+                    do_sample=True,
+                    top_p = 0.95,
+                    max_length=200*(lines+1),
+                    length_penalty = 0.7
+                )
+
+            # return the decoded text + prep for next turn in conversation
+            if self.context_size is not 0:
+                c = c[:-1 * self.context_size] + self.models[speakers[which_is_speaking]][0].decode(output[0], skip_special_tokens=False) + "\n" + speakers[not which_is_speaking] + ":"
+            else:
+                c = self.models[speakers[which_is_speaking]][0].decode(output[0], skip_special_tokens=False) + "\n" + speakers[not which_is_speaking] + ":"
              
             # while loop stuff
             lines += 1
@@ -110,30 +127,40 @@ class Experiment:
             for person in self.population:
                 for partner in self.population:
                     if partner is not person:
-                        self.conversations.loc[len(self.conversations.index)]  = [person, partner, self.conversation_generation(person, partner)]
-                        # TODO: need an argument (whether to save to file or just df)
-                        # output = open(os.path.join(self.output_path, person + "_" + partner + "_" + str(datetime.datetime.now())),'w')
-                        # output.write(self.conversation_generation(person, partner))
-                        # output.close()
+                        conv = self.conversation_generation(person, partner)
+                        if self.use_files:
+                            output = open(os.path.join(self.output_path, person + "_" + partner + "_" + str(datetime.datetime.now())),'w')
+                            output.write(conv)
+                            output.close()
+                        else:
+                            conv1, conv2 = self.split_conversation(conv, person, partner)
+                            self.conversations.loc[len(self.conversations.index)]  = [person, partner, conv, conv1, conv2]
+
         # TODO: training here (need to decide how to train - maybe argument)
-        self.conversations.to_csv('conversations.txt', sep='\t', index=True)
+        #self.conversations.to_csv('conversations.txt', sep='\t', index=True)
+        # get all of the output files into the conversation df to use for training
+        if self.use_files:
+            self.populate_conversations()
         self.train_participant("John")
 
     def train_participant(self, participant):
         if self.verbose:
             print("Training " + participant)
         context_length = 128
-        # TODO: this should be different depending on whether its df or file based
-        # get all the output files where the person participated
-        #data_names = get_participant_files(self.output_path, participant)
         tokenizer = self.models[participant][0]
         model = self.models[participant][1]
 
         # df implementation
         data = self.conversations[(self.conversations['Participant_1'] == participant) | (self.conversations['Participant_2'] == participant)]
 
+        if self.full_conversation:
+            conversations = data['Conversation'].tolist()
+        else:
+            spoke_first = data[data['Participant_1'] == participant]
+            spoke_second = data[data['Participant_2'] == participant]
+            conversations = spoke_first['P_2_Conv'].tolist() + spoke_second['P_1_Conv'].tolist()
         outputs = tokenizer(
-        data['Conversation'].tolist(),
+        conversations,
         truncation=True,
         max_length=context_length,
         return_overflowing_tokens=True,
@@ -193,6 +220,34 @@ class Experiment:
                 train_dataset=tokenized_train,
                 eval_dataset=tokenized_test,
             ).train()
-       # TODO: will train on the full file at the moment, but could be changed to train on just the new text (generated by other person)
 
-# TODO: test custom trainer, custom model + tokenizer
+    def return_model(self, participant):
+        return self.models[participant][1]
+
+    # read all of the output files and put them into the df in needed format
+    # (only used if use_files is True)
+    def populate_conversations(self):
+        data_names = glob.glob(os.path.join(self.output_path, "*"))
+        for file_name in data_names:
+            with open(file_name, 'r') as f:
+                person1, person2 = file_name.split('/')[1].split('_')[:2]
+                conv = f.read()
+                conv1, conv2 = self.split_conversation(conv, person1, person2)
+                self.conversations.loc[len(self.conversations.index)]  = [person1, person2, conv, conv1, conv2]
+            f.close()
+
+    def split_conversation(self, conv, participant1, participant2):
+        list_conv = conv.splitlines()
+        conv1 = []
+        conv2 = []
+        for line in list_conv:
+            if line.startswith(participant1):
+                conv1.append(line)
+            elif line.startswith(participant2):
+                conv2.append(line)
+
+        return "\n\n".join(conv1), "\n\n".join(conv2)
+
+# TODO: test custom trainer, custom model + tokenizer, test custom parameters
+# things left to do: custom parameters for generation, figure out training
+# TODO: test split should be minimized (because the point is to train)

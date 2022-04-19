@@ -55,6 +55,7 @@ def postprocess_next_token_scores(
 @torch.no_grad()
 def custom_generation(
     model,
+    device,
     input_ids: Optional[torch.LongTensor] = None,
     max_length: Optional[int] = None,
     min_length: Optional[int] = None,
@@ -227,7 +228,7 @@ def custom_generation(
             break
 
         # [198] == '\n', TODO: change it to just the encoding of the char
-        if tokens_to_add == torch.tensor([198]):
+        if tokens_to_add == torch.tensor([198]).to(device):
             break
 
         # extend attention_mask for new generated input if only decoder
