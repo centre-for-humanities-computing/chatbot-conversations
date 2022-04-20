@@ -23,7 +23,9 @@ pip install chatting_chatbots
 
 ## Usage
 
-an example of usage (seen in main.py):
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/centre-for-humanities-computing/chatbot-conversations/blob/main/tutorials/examples.ipynb)
+
+an example of usage (seen in tutorials/examples.ipynb):
 
 ```python
 import chatting_chatbots as cc
