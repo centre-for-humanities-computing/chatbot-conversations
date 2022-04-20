@@ -1,6 +1,7 @@
 # Python
 **.pyc
 .venv
+*.egg-info
 
 # Data 
 .cache
