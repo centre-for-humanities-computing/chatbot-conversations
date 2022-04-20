@@ -1,10 +1,14 @@
-# Mostly taken from https://huggingface.co/transformers/v3.5.1/_modules/transformers/modeling_utils.html
-# see there for more info
-# most important line for this task is #235
+"""
+Inspired from https://huggingface.co/transformers/v3.5.1/_modules/transformers/modeling_utils.html
+See there for more info
+Most important line for this task is #235
+"""
+
+from transformers import top_k_top_p_filtering
 
 import logging
+
 from typing import Iterable, Optional, Tuple
-from transformers import top_k_top_p_filtering
 from transformers.generation_utils import GenerationMixin
 import torch
 from torch import Tensor

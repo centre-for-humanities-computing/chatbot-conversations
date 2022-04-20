@@ -1,4 +1,4 @@
-from chatbots import Experiment
+from chatting_chatbots import Experiment
 
 Experiment(
     population = {"John" : "gpt2", "Margaret" : "gpt2", "Alice" : "gpt2", "Bob" : "gpt2", "Eve" : "gpt2", "Charlie" : "gpt2", "Darwin" : "gpt2"}, 
