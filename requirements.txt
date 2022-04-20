@@ -9,4 +9,4 @@ torch==1.9.1
 transformers==4.12.2
 
 # Formatting
-black
+black==22.3.0
