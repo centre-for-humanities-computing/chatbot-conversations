@@ -1,14 +1,21 @@
 
-# Chatbot Conversations
+# Chatting Chatbots
 
-A library for running experiments of multiple chatbots having conversations with each other.
+A library for running experiments of multiple genarative language models having conversations with each other.
 
-[![PyPI version](https://badge.fury.io/py/name.svg)](https://pypi.org/project/chatting_chatbots/)
 [![python version](https://img.shields.io/badge/Python-%3E=3.7-blue)](https://github.com/centre-for-humanities-computing/chatbot-conversations)
 [![Code style: black](https://img.shields.io/badge/Code%20Style-Black-black)](https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html)
 
 
 ## Installation
+
+Install chatting chatbots from PiPy:
+
+```bash
+pip install git+https://github.com/centre-for-humanities-computing/chatbot-conversations
+```
+
+or directly from GitHub:
 
 ```bash
 pip install chatting_chatbots
