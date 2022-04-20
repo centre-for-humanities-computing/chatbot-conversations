@@ -39,3 +39,12 @@ Experiment(
 | train_after_run       | bool              | True                              | If set to `True`, every agent is trained after a `.run()`.                                                                                                                                                                                              |
 | output_path           | str               | "outputs"                         | The path where the conversation files should be saved.                                                                                                                                                                                             |
 | cache_path            | str               | ".cache/huggingface/transformers" | The path where the models (if they are downloaded from HuggingFace) should be stored.                                                                                                                                                              |
+
+## Functions available
+
+| function                  | arguments                        | return           | description                                                                                                                                                       |
+|---------------------------|----------------------------------|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| conversation_generation() | str speaker_one, str speaker_two | str conversation | Generates a conversation between `speaker_one` and `speaker_two`. Returns the conversation. Note that the speakers must be in the population of the `Experiment`. |
+| run()                     | -                                | -                | Runs the experiment by having each agent speak with each other agent for the set number of cycles, optionally training them afterwards.                           |
+| train_participant()       | str participant                  | -                | Trains the participant specified. Note that the participant must be part of the `population` of the `Experiment`.                                                 |
+| return_model              | str participant                  | model            | Returns the current model of the specified participant.                                                                                                           |
