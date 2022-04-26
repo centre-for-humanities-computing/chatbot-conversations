@@ -1,1 +1,1 @@
-from chatbots import Experiment  # noqa
+from .chatbots import Experiment # noqa

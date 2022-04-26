@@ -9,8 +9,8 @@ import os
 import torch
 import datetime
 import random
-from generation import custom_generation
-from utils import get_participant_files, split_conversation
+from .generation import custom_generation
+from .utils import get_participant_files, split_conversation
 import glob
 import pandas as pd
 
