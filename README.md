@@ -5,23 +5,25 @@ A library for running experiments of multiple genarative language models having 
 
 [![python version](https://img.shields.io/badge/Python-%3E=3.7-blue)](https://github.com/centre-for-humanities-computing/chatbot-conversations)
 [![Code style: black](https://img.shields.io/badge/Code%20Style-Black-black)](https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html)
-
+[![pytorch version](https://img.shields.io/badge/pytorch-%3E=1.9.1-orange)](https://github.com/pytorch/pytorch)
 
 ## Installation
 
 Install chatting chatbots from PiPy:
 
 ```bash
-pip install git+https://github.com/centre-for-humanities-computing/chatbot-conversations
+pip install chatting_chatbots
 ```
 
 or directly from GitHub:
 
 ```bash
-pip install chatting_chatbots
+pip install git+https://github.com/centre-for-humanities-computing/chatbot-conversations
 ```
 
 ## Usage
+
+The package currently works only with PyTorch. 
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/centre-for-humanities-computing/chatbot-conversations/blob/main/tutorials/examples.ipynb)
 
