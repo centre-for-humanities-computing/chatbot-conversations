@@ -59,6 +59,9 @@ class Experiment:
         if not os.path.exists(output_path):
             os.makedirs(output_path)
 
+        if isinstance(initial_context, list) and len(initial_context) != cycles:
+            raise Exception("Initial context must be either a single string or a list with the same number of strings as cycles. Found " + str(cycles) + " cycles and " + str(len(initial_context)) + " contexts.")
+
         self.population = population
         self.cycles = cycles
         self.initial_context = initial_context
@@ -111,12 +114,13 @@ class Experiment:
         if self.verbose:
             print("Finished model instantiation")
 
-    def conversation_generation(self, speaker_one, speaker_two):
+    def conversation_generation(self, speaker_one, speaker_two, context):
         """generate a conversation between two participants
 
         Keyword arguments:
         speaker_one - name of speaker one (as a string; must exist in the participants pool)
         speaker_two - name of speaker two (rules as above)
+        context - initial context to use
         Return: a conversation between the two speakers
         """
 
@@ -134,7 +138,7 @@ class Experiment:
             + ": \n\n"
             + speaker_one
             + ": "
-            + self.initial_context
+            + context
             + "\n\n"
             + speaker_two
             + ":"
@@ -217,8 +221,12 @@ class Experiment:
             for person in self.population:
                 for partner in self.population:
                     if partner is not person:
+                        if(isinstance(self.initial_context, list)):
+                            context = self.initial_context[i]
+                        else:
+                            context = self.initial_context
                         # generate conversation, save to files if needed, save to df otherwise
-                        conv = self.conversation_generation(person, partner)
+                        conv = self.conversation_generation(person, partner, context)
                         if self.use_files:
                             output = open(
                                 os.path.join(
