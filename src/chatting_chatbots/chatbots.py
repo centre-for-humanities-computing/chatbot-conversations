@@ -251,15 +251,20 @@ class Experiment:
             for person in self.population:
                 self.train_participant(person)
 
-    def train_participant(self, participant):
+    def train_participant(self, participant, training_args=None):
         """function for training one of the participants
 
         Keyword arguments:
         participant - name of participant (in str form, must exist in Experiment pool)
+        training_args - a TrainingArgs object for the Trainer
         """
 
         if self.verbose:
             print("Training " + participant)
+
+        # if custom ones are not passed, use default ones
+        if training_args is None:
+            training_args = self.training_args
 
         # only take conversations where the participant was talking
         data = self.conversations[
@@ -302,8 +307,8 @@ class Experiment:
         )
 
         # some default args if custom ones are not given
-        if self.training_args is None:
-            args = TrainingArguments(
+        if training_args is None:
+            training_args = TrainingArguments(
                 output_dir="training-dir",
                 per_device_train_batch_size=2,
                 evaluation_strategy="steps",
@@ -315,17 +320,15 @@ class Experiment:
                 lr_scheduler_type="cosine",
                 learning_rate=5e-4,
                 save_steps=500,
-                fp16=True,
+                fp16=False,
                 push_to_hub=False,
             )
-        else:
-            args = self.training_args
 
         # train the model
         Trainer(
             model=self.models[participant][1],
             tokenizer=self.models[participant][0],
-            args=args,
+            args=training_args,
             data_collator=data_collator,
             train_dataset=input_batch,
         ).train()
