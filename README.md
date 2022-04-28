@@ -27,21 +27,38 @@ The package currently works only with PyTorch and GPT-based models. Models teste
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/centre-for-humanities-computing/chatbot-conversations/blob/main/tutorials/examples.ipynb)
 
-an example of usage (seen in tutorials/examples.ipynb):
+An example of usage (seen in tutorials/examples.ipynb):
 
 ```python
 import chatting_chatbots as cc
 
 cc.Experiment(
-    population = {"John" : "gpt2", "Margaret" : "gpt2", "Alice" : "gpt2", "Bob" : "gpt2", "Eve" : "gpt2", "Charlie" : "gpt2", "Darwin" : "gpt2"}, 
+    population = {"John" : "gpt2", "Margaret" : "gpt2"}, 
     cycles = 2,
     initial_context="Hi. Why are you late?",
     conversation_length=10,
     verbose = True,
-    use_gpu=0,
-    use_files=False
+    use_gpu=-1,
+    use_files=True
     ).run()
 ``` 
+
+Output from this example:
+```
+A conversation between John and Margaret: 
+
+John: Hi. Why are you late?
+
+Margaret: Oh, it's because I had an appointment at work today and now I want to do some shopping in the morning.
+
+John: Oh, yes?
+
+Margaret: Oh, yes.
+
+John: No no, I really don't like shopping in the morning.
+
+Margaret: I like shopping in the evenings.
+```
 
 ## Parameters for `Experiment`
 | **parameter**         | **type**          | **default**                       | **description**                                                                                                                                                                                                                                         |
