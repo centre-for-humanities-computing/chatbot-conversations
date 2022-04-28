@@ -186,26 +186,24 @@ class Experiment:
                     length_penalty=0.7,
                 )
 
-            # return the decoded text + prep for next turn in conversation
+            # return the decoded text
             if self.context_size is not 0:
                 c = (
                     c[: -1 * self.context_size]
                     + self.models[speakers[which_is_speaking]][0].decode(
                         output[0], skip_special_tokens=False
                     )
-                    + "\n"
-                    + speakers[not which_is_speaking]
-                    + ":"
                 )
             else:
                 c = (
                     self.models[speakers[which_is_speaking]][0].decode(
                         output[0], skip_special_tokens=False
                     )
-                    + "\n"
-                    + speakers[not which_is_speaking]
-                    + ":"
                 )
+            
+            # prep for next turn if not the end
+            if lines + 1 != length:
+                c += "\n" + speakers[not which_is_speaking] + ":"
 
             # while loop stuff
             lines += 1

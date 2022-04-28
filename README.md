@@ -23,7 +23,7 @@ pip install git+https://github.com/centre-for-humanities-computing/chatbot-conve
 
 ## Usage
 
-The package currently works only with PyTorch. 
+The package currently works only with PyTorch and GPT-based models. Models tested: gpt2, gpt-j, gpt-neo, distilgpt2.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/centre-for-humanities-computing/chatbot-conversations/blob/main/tutorials/examples.ipynb)
 
