@@ -21,6 +21,10 @@ or directly from GitHub:
 pip install git+https://github.com/centre-for-humanities-computing/chatbot-conversations
 ```
 
+## Overview of Implementation
+
+![](docs/_static/implementation.png)
+
 ## Usage
 
 The package currently works only with PyTorch and GPT-based models. Models tested: gpt2, gpt-j, gpt-neo, distilgpt2.
