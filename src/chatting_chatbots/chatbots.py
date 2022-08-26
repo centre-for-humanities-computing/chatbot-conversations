@@ -60,7 +60,13 @@ class Experiment:
             os.makedirs(output_path)
 
         if isinstance(initial_context, list) and len(initial_context) != cycles:
-            raise Exception("Initial context must be either a single string or a list with the same number of strings as cycles. Found " + str(cycles) + " cycles and " + str(len(initial_context)) + " contexts.")
+            raise Exception(
+                "Initial context must be either a single string or a list with the same number of strings as cycles. Found "
+                + str(cycles)
+                + " cycles and "
+                + str(len(initial_context))
+                + " contexts."
+            )
 
         self.population = population
         self.cycles = cycles
@@ -192,19 +198,14 @@ class Experiment:
 
             # return the decoded text
             if self.context_size is not 0:
-                c = (
-                    c[: -1 * self.context_size]
-                    + self.models[speakers[which_is_speaking]][0].decode(
-                        output[0], skip_special_tokens=False
-                    )
-                )
+                c = c[: -1 * self.context_size] + self.models[
+                    speakers[which_is_speaking]
+                ][0].decode(output[0], skip_special_tokens=False)
             else:
-                c = (
-                    self.models[speakers[which_is_speaking]][0].decode(
-                        output[0], skip_special_tokens=False
-                    )
+                c = self.models[speakers[which_is_speaking]][0].decode(
+                    output[0], skip_special_tokens=False
                 )
-            
+
             # prep for next turn if not the end
             if lines + 1 != length:
                 c += "\n" + speakers[not which_is_speaking] + ":"
@@ -221,7 +222,7 @@ class Experiment:
             for person in self.population:
                 for partner in self.population:
                     if partner is not person:
-                        if(isinstance(self.initial_context, list)):
+                        if isinstance(self.initial_context, list):
                             context = self.initial_context[i]
                         else:
                             context = self.initial_context
